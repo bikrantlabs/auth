@@ -13,7 +13,7 @@ exports.up = (pgm) => {
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     `);
   pgm.sql(`
-      CREATE TABLE auth (
+      CREATE TABLE auth_users (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT,
@@ -24,7 +24,7 @@ exports.up = (pgm) => {
     );
     `);
   pgm.sql(`
-    CREATE TABLE refresh_tokens (
+    CREATE TABLE auth_refresh_tokens (
       id TEXT PRIMARY KEY,
       auth_id UUID NOT NULL,
       token_hash TEXT NOT NULL,
@@ -34,32 +34,12 @@ exports.up = (pgm) => {
       auth_agent TEXT,
       ip_address TEXT,
 
-      CONSTRAINT fk_auth
+      CONSTRAINT fk_auth_users
         FOREIGN KEY(auth_id)
-        REFERENCES auth(id)
+        REFERENCES auth_users(id)
         ON DELETE CASCADE
     );
     `);
-  pgm.sql(`
-        CREATE TABLE api_keys(
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-            hash VARCHAR(255) UNIQUE NOT NULL,
-            mask VARCHAR(20) NOT NULL,
-            prefix VARCHAR(20) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-
-            is_active BOOLEAN DEFAULT TRUE,
-            last_used_at TIMESTAMP,
-            expires_at TIMESTAMP,
-            
-            auth_id UUID NOT NULL,
-
-            CONSTRAINT fk_events FOREIGN KEY(auth_id) REFERENCES auth(id) ON DELETE CASCADE,
-
-            created_at TIMESTAMP NOT NULL DEFAULT NOW()
-        );      
-        `);
 };
 
 /**
@@ -77,7 +57,4 @@ exports.down = (pgm) => {
   pgm.sql(`
     DROP EXTENSION IF EXISTS pgcrypto;
     `);
-  pgm.sql(`
-        DROP TABLE api_keys;
-        `);
 };

@@ -6,8 +6,8 @@ import { logger } from "@/shared/logger";
 
 async function start() {
   try {
-    await connectDB();
-    await connectRedis();
+    // await connectDB();
+    // await connectRedis();
 
     const app = createApp();
 

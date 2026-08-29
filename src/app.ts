@@ -5,6 +5,7 @@ import { env } from "@/config/env";
 import { logger } from "@/shared/logger";
 
 import { errorHandler } from "@/shared/errors";
+import { authRouter } from "./presentation/http/routes/auth.routes";
 
 export function createApp() {
   const app = express();
@@ -42,6 +43,8 @@ export function createApp() {
       res.json({ status: "ok", timestamp: new Date().toISOString() });
     }),
   );
+
+  app.use(`${env.API_PREFIX}/auth`, authRouter);
 
   app.use((_req, res) => {
     res.status(404).json({
