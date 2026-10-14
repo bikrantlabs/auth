@@ -14,8 +14,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowJs": true
   },
   "include": ["src", "test", "load-tests"],
   "exclude": ["dist", "node_modules", "migrations"]
 }
+

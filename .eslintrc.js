@@ -24,7 +24,7 @@ module.exports = {
       // Enables type checking for typescript files.
       // Src for the overrides from here :
       // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/eslint-recommended.ts
-      files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
+      files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
       parser: "@typescript-eslint/parser",
       // Move parserOptions INTO the override, so it only applies to TS files
       parserOptions: {
@@ -61,7 +61,6 @@ module.exports = {
         // typescript-eslint rules
         // check https://typescript-eslint.io/rules/ for reference
         "@typescript-eslint/array-type": "error",
-        "@typescript-eslint/consistent-type-definitions": ["error", "type"],
         "@typescript-eslint/no-unnecessary-condition": "error",
         "@typescript-eslint/prefer-includes": "error",
         "@typescript-eslint/prefer-optional-chain": "error",
@@ -75,6 +74,12 @@ module.exports = {
         "@typescript-eslint/no-unsafe-member-access": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/restrict-plus-operands": "error",
+      },
+    },
+    {
+      files: ["**/*.routes.ts"],
+      rules: {
+        "@typescript-eslint/ban-types": "off",
       },
     },
   ],
