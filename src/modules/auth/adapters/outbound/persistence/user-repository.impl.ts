@@ -1,9 +1,9 @@
 import type { Pool } from "pg";
-import { UserRepositoryPort } from "../application/ports/repositories/UserRepositoryPort.js";
-import { UserAlreadyExistsError } from "../application/errors/index.js";
-import { User } from "../domain/entities/User.js";
-import { Email } from "../domain/value-objects/Email.js";
-import { UserMapper, type DbUser } from "./UserMapper.js";
+import { UserRepositoryPort } from "../../../application/ports/outbound/user-repository.port";
+import { UserAlreadyExistsError } from "../../../application/errors/index";
+import { User } from "../../../domain/entities/user.entity";
+import { Email } from "../../../domain/value-objects/email.vo";
+import { UserMapper, type DbUser } from "./user.mapper";
 
 // Column names match migrations/*_init.cjs (auth_users table).
 const SELECT_USER =

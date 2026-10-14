@@ -4,13 +4,22 @@ import { env } from "@/config/env";
 import { connectDB, disconnectDB } from "@/shared/database/postgres";
 import { connectRedis, disconnectRedis } from "@/shared/cache/redis";
 import { logger } from "@/shared/logging/pino.logger";
-import { registerDependencies } from "@/shared/di/container";
+import { container, registerDependencies } from "@/shared/di/container";
+import { UserRegisteredEmailListener } from "@/modules/auth/adapters/inbound/user-registered.listener";
+import { VerificationEmailWorker } from "@/modules/auth/adapters/inbound/verification-email.worker";
+import { BullMqVerificationEmailQueue } from "@/modules/auth/adapters/outbound/queue/bullmq-verification-email.queue";
 
 async function start() {
   try {
     registerDependencies();
     await connectDB();
     await connectRedis();
+
+    // Inbound adapters: subscribing the listener wires schedule→queue;
+    // starting the worker wires queue→send→mailer.
+    container.resolve(UserRegisteredEmailListener);
+    const emailWorker = container.resolve(VerificationEmailWorker);
+    emailWorker.start();
 
     const app = createApp();
 
@@ -24,6 +33,9 @@ async function start() {
       server.close(async () => {
         logger.info("HTTP server closed", "Bootstrap");
         try {
+          await emailWorker.stop();
+          const queue = container.resolve(BullMqVerificationEmailQueue);
+          await queue.close();
           await disconnectDB();
           await disconnectRedis();
           logger.info("Graceful shutdown complete", "Bootstrap");

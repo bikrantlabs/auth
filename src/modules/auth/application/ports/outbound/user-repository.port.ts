@@ -1,5 +1,5 @@
-import { User } from '../../../domain/entities/User.js';
-import { Email } from '../../../domain/value-objects/Email.js';
+import { User } from '../../../domain/entities/user.entity';
+import { Email } from '../../../domain/value-objects/email.vo';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface UserRepositoryPort {

@@ -23,13 +23,14 @@ const envSchema = z.object({
     .min(1, "Email from is required")
     .default("test@waas.com"),
 
+  // Single master secret (base64, 32+ bytes). Purpose-scoped keys are
+  // derived from it in src/shared/crypto/derived-keys.ts — never use the
+  // master directly for hashing/signing.
+  SERVER_SECRET: z
+    .string()
+    .min(32, "SERVER_SECRET must be at least 32 chars (base64, 32+ bytes)"),
+
   // JWT
-  ACCESS_TOKEN_SECRET: z
-    .string()
-    .min(32, "ACCESS_TOKEN_SECRET must be at least 32 chars"),
-  REFRESH_TOKEN_SECRET: z
-    .string()
-    .min(32, "REFRESH_TOKEN_SECRET must be at least 32 chars"),
   ACCESS_TOKEN_EXPIRY: z.string().default("15m"),
   REFRESH_TOKEN_EXPIRY: z.string().default("7d"),
 

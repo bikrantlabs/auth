@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import { container } from "tsyringe";
-import { Email } from "@/modules/auth/domain/value-objects/Email";
-import { PlainPassword } from "@/modules/auth/domain/value-objects/UserPassword";
-import { RegisterUserCommand } from "@/modules/auth/application/RegisterUserCommand";
-import { RegisterUserUseCase } from "@/modules/auth/application/RegisterUserUseCase";
+import { Email } from "@/modules/auth/domain/value-objects/email.vo";
+import { PlainPassword } from "@/modules/auth/domain/value-objects/user-password.vo";
+import { RegisterUserCommand } from "@/modules/auth/application/register-user.command";
+import { RegisterUserUseCase } from "@/modules/auth/application/register-user.use-case";
 import type { RegisterBody } from "./register.contract";
 
 /**

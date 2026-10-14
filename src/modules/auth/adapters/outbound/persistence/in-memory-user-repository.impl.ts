@@ -1,7 +1,7 @@
-import { UserRepositoryPort } from "../application/ports/repositories/UserRepositoryPort.js";
-import { UserAlreadyExistsError } from "../application/errors/index.js";
-import { User } from "../domain/entities/User.js";
-import { Email } from "../domain/value-objects/Email.js";
+import { UserRepositoryPort } from "../../../application/ports/outbound/user-repository.port";
+import { UserAlreadyExistsError } from "../../../application/errors/index";
+import { User } from "../../../domain/entities/user.entity";
+import { Email } from "../../../domain/value-objects/email.vo";
 
 export class InMemoryUserRepository implements UserRepositoryPort {
   private readonly usersByEmail = new Map<string, User>();

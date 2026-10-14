@@ -1,4 +1,4 @@
-import { InvalidEmailError } from '../exceptions/Error.js';
+import { InvalidEmailError } from '../exceptions/errors';
 
 /**
  * Here, I have to convert email into value object having it's own validating rules.

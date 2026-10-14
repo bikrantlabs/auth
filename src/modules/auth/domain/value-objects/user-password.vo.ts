@@ -2,7 +2,7 @@ import {
   EmptyPasswordHashError,
   LongPasswordError,
   WeakPasswordError,
-} from '../exceptions/Error.js';
+} from '../exceptions/errors';
 
 // Plaintext: short-lived, validated, never persisted
 export class PlainPassword {

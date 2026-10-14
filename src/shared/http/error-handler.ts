@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { logger } from "@/shared/logging/pino.logger";
-import { DomainError } from "@/modules/auth/domain/exceptions/DomainError";
+import { DomainError } from "@/modules/auth/domain/exceptions/domain-error";
 
 type HttpError = Error & {
   statusCode?: number;

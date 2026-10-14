@@ -1,6 +1,6 @@
-import { User } from '../domain/entities/User.js';
-import { Email } from '../domain/value-objects/Email.js';
-import { PasswordHash } from '../domain/value-objects/UserPassword.js';
+import { User } from '../../../domain/entities/user.entity';
+import { Email } from '../../../domain/value-objects/email.vo';
+import { PasswordHash } from '../../../domain/value-objects/user-password.vo';
 
 export type DbUser = {
   id: string;

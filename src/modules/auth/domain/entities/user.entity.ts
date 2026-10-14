@@ -1,6 +1,6 @@
-import { Email } from '../value-objects/Email.js';
+import { Email } from '../value-objects/email.vo';
 import crypto from 'node:crypto';
-import { PasswordHash } from '../value-objects/UserPassword.js';
+import { PasswordHash } from '../value-objects/user-password.vo';
 export class User {
   private constructor(
     private readonly _id: string,

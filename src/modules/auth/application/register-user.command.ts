@@ -1,5 +1,5 @@
-import { Email } from '../domain/value-objects/Email.js';
-import { PlainPassword } from '../domain/value-objects/UserPassword.js';
+import { Email } from '../domain/value-objects/email.vo';
+import { PlainPassword } from '../domain/value-objects/user-password.vo';
 
 export class RegisterUserCommand {
   private readonly _email: Email;

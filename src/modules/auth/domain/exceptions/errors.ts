@@ -1,4 +1,4 @@
-import { DomainError } from './DomainError.js';
+import { DomainError } from "./domain-error";
 
 export class InvalidEmailError extends DomainError {
   constructor(value: string) {
@@ -18,6 +18,12 @@ export class EmptyPasswordHashError extends DomainError {
 
 export class LongPasswordError extends DomainError {
   constructor() {
-    super('Password cannot be greater than 128 characters.');
+    super("Password cannot be greater than 128 characters.");
+  }
+}
+
+export class InvalidVerificationTokenError extends DomainError {
+  constructor() {
+    super("Invalid Verification Token.");
   }
 }

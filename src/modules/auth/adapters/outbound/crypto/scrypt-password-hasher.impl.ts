@@ -1,6 +1,6 @@
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { PasswordHasher } from "../application/ports/services/PasswordHasher.js";
+import { PasswordHasher } from "../../../application/ports/outbound/password-hasher.port";
 
 const scryptAsync = promisify(scrypt);
 

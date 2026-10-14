@@ -1,0 +1,7 @@
+Let's see how I designed the events and job in my application following hexagonal architecture.
+
+Problem Statement: My user registration endpoint currently has no way of sending verification emails to the newly registered users. I can't simply send the email after the user has been registered within the application's use case. This will not only make the application slow(since sending email in the same process takes some time), it will also break the archcitecture by itself.
+
+So, my approach is to emit the event `user.registered` after registration. So the concerned parties (email, analytics, CRM, Slack notifications) etc will listen to that event and handle them respectively. For now, our only concern is sending emails. I will have a eventemitter which is only responsible for emitting the event with necessary data. The event listener will listen to that event and add a job(email sending job) to a queue. Later any free worker will pick up the job from the queue and start processing that job. This will keep app responsive and user will get registration successful immediately. Even after email is being sent 10 seconds late, it will be fine since receiving mails late is expected.
+
+Inside the auth module, in application/port/, I will have auth-event.port.ts(outbound port) that will emit the event, and email-queue.port.ts(outbound port) that will enqueue a verification email job in the queue.
