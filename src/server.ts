@@ -1,42 +1,42 @@
+import "reflect-metadata";
 import { createApp } from "@/app";
 import { env } from "@/config/env";
-import { connectDB, disconnectDB } from "@/infrastructure/persistence/postgres";
-import { connectRedis, disconnectRedis } from "@/infrastructure/redis/redis";
-import { logger } from "@/shared/logger";
+import { connectDB, disconnectDB } from "@/shared/database/postgres";
+import { connectRedis, disconnectRedis } from "@/shared/cache/redis";
+import { logger } from "@/shared/logging/pino.logger";
+import { registerDependencies } from "@/shared/di/container";
 
 async function start() {
   try {
-    // await connectDB();
-    // await connectRedis();
+    registerDependencies();
+    await connectDB();
+    await connectRedis();
 
     const app = createApp();
 
     const server = app.listen(env.PORT, () => {
-      logger.info(
-        { port: env.PORT, url: `http://localhost:${env.PORT}` },
-        "Server started",
-      );
+      logger.info(`Server started on http://localhost:${env.PORT}`, "Bootstrap");
     });
 
     async function shutdown(signal: string) {
-      logger.info({ signal }, "Shutdown signal received");
+      logger.info(`Shutdown signal received: ${signal}`, "Bootstrap");
 
       server.close(async () => {
-        logger.info("HTTP server closed");
+        logger.info("HTTP server closed", "Bootstrap");
         try {
           await disconnectDB();
           await disconnectRedis();
-          logger.info("Graceful shutdown complete");
+          logger.info("Graceful shutdown complete", "Bootstrap");
           process.exit(0);
         } catch (err) {
-          logger.error({ err }, "Error during shutdown");
+          logger.error("Error during shutdown", err, "Bootstrap");
           process.exit(1);
         }
       });
 
       // Force exit after 30s if graceful shutdown hangs
       setTimeout(() => {
-        logger.error("Forced shutdown after timeout");
+        logger.error("Forced shutdown after timeout", undefined, "Bootstrap");
         process.exit(1);
       }, 30_000);
     }
@@ -50,16 +50,16 @@ async function start() {
 
     // Catch unhandled rejections — log and exit (let your process manager restart)
     process.on("unhandledRejection", (reason) => {
-      logger.fatal({ reason }, "Unhandled promise rejection");
+      logger.error("Unhandled promise rejection", reason, "Bootstrap");
       process.exit(1);
     });
 
     process.on("uncaughtException", (err) => {
-      logger.fatal({ err }, "Uncaught exception");
+      logger.error("Uncaught exception", err, "Bootstrap");
       process.exit(1);
     });
   } catch (error) {
-    logger.fatal({ error }, "Failed to start server");
+    logger.error("Failed to start server", error, "Bootstrap");
     process.exit(1);
   }
 }

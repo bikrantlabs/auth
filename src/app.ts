@@ -2,10 +2,9 @@ import express, { Router } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { env } from "@/config/env";
-import { logger } from "@/shared/logger";
-
-import { errorHandler } from "@/shared/errors";
-import { authRouter } from "./presentation/http/routes/auth.routes";
+import { logger } from "@/shared/logging/pino.logger";
+import { errorHandler } from "@/shared/http/error-handler";
+import { authRouter } from "@/modules/auth/presentation/auth.routes";
 
 export function createApp() {
   const app = express();
@@ -30,8 +29,8 @@ export function createApp() {
   // Request logging
   app.use((req, _res, next) => {
     logger.debug(
-      { method: req.method, url: req.url, ip: req.ip },
-      "Incoming Request",
+      `Incoming Request: ${req.method} ${req.url}`,
+      `HTTP ${req.ip}`,
     );
     next();
   });
@@ -39,7 +38,7 @@ export function createApp() {
   app.use(
     `${env.API_PREFIX}/`,
     Router().get("/health", (_req, res) => {
-      logger.info("Health Check");
+      logger.info("Health Check", "HTTP");
       res.json({ status: "ok", timestamp: new Date().toISOString() });
     }),
   );
@@ -56,3 +55,4 @@ export function createApp() {
   app.use(errorHandler);
   return app;
 }
+
