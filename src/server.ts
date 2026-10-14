@@ -5,9 +5,14 @@ import { connectDB, disconnectDB } from "@/shared/database/postgres";
 import { connectRedis, disconnectRedis } from "@/shared/cache/redis";
 import { logger } from "@/shared/logging/pino.logger";
 import { container, registerDependencies } from "@/shared/di/container";
+import type { WorkerHandle } from "@/shared/queue/worker";
+import type { JobQueuePort } from "@/shared/queue/queue.port";
 import { UserRegisteredEmailListener } from "@/modules/auth/adapters/inbound/user-registered.listener";
-import { VerificationEmailWorker } from "@/modules/auth/adapters/inbound/verification-email.worker";
-import { BullMqVerificationEmailQueue } from "@/modules/auth/adapters/outbound/queue/bullmq-verification-email.queue";
+import {
+  VERIFICATION_EMAIL_QUEUE,
+  VERIFICATION_EMAIL_WORKER,
+} from "@/modules/auth/application/ports/tokens";
+import type { VerificationEmailJob } from "@/modules/auth/application/verification-email.job";
 
 async function start() {
   try {
@@ -16,10 +21,9 @@ async function start() {
     await connectRedis();
 
     // Inbound adapters: subscribing the listener wires schedule→queue;
-    // starting the worker wires queue→send→mailer.
+    // resolving the worker handle starts queue→send→mailer.
     container.resolve(UserRegisteredEmailListener);
-    const emailWorker = container.resolve(VerificationEmailWorker);
-    emailWorker.start();
+    const emailWorker = container.resolve<WorkerHandle>(VERIFICATION_EMAIL_WORKER);
 
     const app = createApp();
 
@@ -34,7 +38,9 @@ async function start() {
         logger.info("HTTP server closed", "Bootstrap");
         try {
           await emailWorker.stop();
-          const queue = container.resolve(BullMqVerificationEmailQueue);
+          const queue = container.resolve<JobQueuePort<VerificationEmailJob>>(
+            VERIFICATION_EMAIL_QUEUE,
+          );
           await queue.close();
           await disconnectDB();
           await disconnectRedis();

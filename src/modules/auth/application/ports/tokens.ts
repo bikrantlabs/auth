@@ -13,7 +13,9 @@ export const AUTH_EVENTS = Symbol('AuthEventPort');
 
 export const EVENT_EMITTER = Symbol('EventEmitter');
 
-export const VERIFICATION_EMAIL_QUEUE = Symbol('VerificationEmailQueuePort');
+export const VERIFICATION_EMAIL_QUEUE = Symbol('JobQueuePort<VerificationEmailJob>');
+
+export const VERIFICATION_EMAIL_WORKER = Symbol('VerificationEmailWorker');
 
 export const TOKEN_HASHER = Symbol('TokenHasher');
 

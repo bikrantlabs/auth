@@ -13,10 +13,11 @@ import { verificationCodeKey } from "@/shared/crypto/derived-keys";
 import type { UserRepositoryPort } from "@/modules/auth/application/ports/outbound/user-repository.port";
 import type { PasswordHasher } from "@/modules/auth/application/ports/outbound/password-hasher.port";
 import type { AuthEventPort } from "@/modules/auth/application/ports/outbound/auth-event.port";
-import type { VerificationEmailQueuePort } from "@/modules/auth/application/ports/outbound/verification-email-queue.port";
+import type { JobQueuePort } from "@/shared/queue/queue.port";
+import type { WorkerHandle } from "@/shared/queue/worker";
+import type { EmailSenderPort } from "@/shared/email/email-sender.port";
 import type { TokenHasher } from "@/modules/auth/application/ports/outbound/token-hasher.port";
 import type { VerificationTokenRepositoryPort } from "@/modules/auth/application/ports/outbound/verification-token-repository.port";
-import type { EmailSenderPort } from "@/modules/auth/application/ports/outbound/email-sender.port";
 import type { ScheduleVerificationEmailUseCase } from "@/modules/auth/application/ports/inbound/schedule-verification-email.usecase";
 import type { SendVerificationEmailUseCase } from "@/modules/auth/application/ports/inbound/send-verification-email.usecase";
 import {
@@ -28,17 +29,22 @@ import {
   TOKEN_HASHER,
   USER_REPOSITORY,
   VERIFICATION_EMAIL_QUEUE,
+  VERIFICATION_EMAIL_WORKER,
   VERIFICATION_TOKEN_REPOSITORY,
 } from "@/modules/auth/application/ports/tokens";
+import {
+  VERIFICATION_EMAIL_QUEUE_NAME,
+  type VerificationEmailJob,
+} from "@/modules/auth/application/verification-email.job";
+import { BullMqQueue, createQueue } from "@/shared/queue/bullmq-queue.adapter";
 import { UserRepositoryImpl } from "@/modules/auth/adapters/outbound/persistence/user-repository.impl";
 import { ScryptPasswordHasher } from "@/modules/auth/adapters/outbound/crypto/scrypt-password-hasher.impl";
 import { NodeAuthEventEmitter } from "@/modules/auth/adapters/outbound/events/node-auth-event.emitter";
 import { UserRegisteredEmailListener } from "@/modules/auth/adapters/inbound/user-registered.listener";
-import { BullMqVerificationEmailQueue } from "@/modules/auth/adapters/outbound/queue/bullmq-verification-email.queue";
-import { VerificationEmailWorker } from "@/modules/auth/adapters/inbound/verification-email.worker";
+import { createVerificationEmailWorker } from "@/modules/auth/adapters/inbound/verification-email.worker";
 import { HmacTokenHasher } from "@/modules/auth/adapters/outbound/crypto/hmac-token-hasher.impl";
 import { VerificationTokenRepositoryImpl } from "@/modules/auth/adapters/outbound/persistence/verification-token-repository.impl";
-import { SmtpEmailSender } from "@/modules/auth/adapters/outbound/email/smtp-email.sender";
+import { SmtpEmailSender } from "@/shared/email/smtp-email.sender";
 import { RegisterUserUseCase } from "@/modules/auth/application/register-user.use-case";
 import { ScheduleVerificationEmailService } from "@/modules/auth/application/schedule-verification-email.service";
 import { SendVerificationEmailService } from "@/modules/auth/application/send-verification-email.service";
@@ -76,8 +82,10 @@ export function registerDependencies(): void {
     useFactory: (c) =>
       new NodeAuthEventEmitter(c.resolve<EventEmitter>(EVENT_EMITTER)),
   });
-  container.register<VerificationEmailQueuePort>(VERIFICATION_EMAIL_QUEUE, {
-    useFactory: () => new BullMqVerificationEmailQueue(),
+  // Generic queue adapter parameterized with auth's job type + queue name
+  container.register<JobQueuePort<VerificationEmailJob>>(VERIFICATION_EMAIL_QUEUE, {
+    useFactory: () =>
+      new BullMqQueue(createQueue<VerificationEmailJob>(VERIFICATION_EMAIL_QUEUE_NAME)),
   });
   container.register<TokenHasher>(TOKEN_HASHER, {
     useFactory: () => new HmacTokenHasher(verificationCodeKey),
@@ -110,7 +118,7 @@ export function registerDependencies(): void {
     {
       useFactory: (c) =>
         new ScheduleVerificationEmailService(
-          c.resolve<VerificationEmailQueuePort>(VERIFICATION_EMAIL_QUEUE),
+          c.resolve<JobQueuePort<VerificationEmailJob>>(VERIFICATION_EMAIL_QUEUE),
         ),
     },
   );
@@ -135,9 +143,9 @@ export function registerDependencies(): void {
         c.resolve<LoggerPort>(LOGGER),
       ),
   });
-  container.register(VerificationEmailWorker, {
+  container.register<WorkerHandle>(VERIFICATION_EMAIL_WORKER, {
     useFactory: (c) =>
-      new VerificationEmailWorker(
+      createVerificationEmailWorker(
         c.resolve<SendVerificationEmailUseCase>(SendVerificationEmailService),
         c.resolve<LoggerPort>(LOGGER),
       ),
@@ -145,9 +153,6 @@ export function registerDependencies(): void {
 
   // Ensure the concrete classes themselves are resolvable
   container.register(ScryptPasswordHasher, { useClass: ScryptPasswordHasher });
-  container.register(BullMqVerificationEmailQueue, {
-    useFactory: () => new BullMqVerificationEmailQueue(),
-  });
   container.register(SmtpEmailSender, {
     useFactory: () => new SmtpEmailSender(),
   });
